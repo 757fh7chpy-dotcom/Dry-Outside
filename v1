@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>DryOutside.com | Should I dry my clothes outside today?</title>
+    <meta name="description" content="Stop guessing. Get a science-backed answer to 'Should I dry my clothes outside today?' based on real-time weather data.">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "Should I dry my clothes outside today?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Check DryOutside.com for real-time drying efficiency based on temperature, humidity, and wind speed in your specific location."
+        }
+      }]
+    }
+    </script>
+
+    <style>
+        /* DESIGN & LAYOUT */
+        * { box-sizing: border-box; }
+        body, html { height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #ffffff; color: #000; transition: all 0.8s ease; overflow-x: hidden; }
+        
+        /* Night Mode Colors */
+        body.night-mode { background-color: #0d0d15; color: #fff; }
+        body.night-mode #summary-text { background: rgba(255,255,255,0.1); }
+        body.night-mode input { background: #1a1a2e; border-color: #333; color: #fff; }
+        body.night-mode .fabric-item, body.night-mode .hourly-pill { background: rgba(255,255,255,0.05); border-color: #333; }
+        
+        .container { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 12vh 20px 60px 20px; text-align: center; }
+        
+        /* Navigation Buttons */
+        #night-toggle, #about-toggle { position: absolute; top: 35px; z-index: 100; background: rgba(0,0,0,0.05); border-radius: 20px; padding: 5px 12px; font-size: 0.7rem; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        #night-toggle { right: 20px; }
+        #about-toggle { left: 20px; }
+
+        /* About Page Popup */
+        #about-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: none; padding: 80px 30px; overflow-y: auto; text-align: left; line-height: 1.6; }
+        body.night-mode #about-page { background: #0d0d15; color: #eee; }
+        .about-content { max-width: 600px; margin: 0 auto; }
+        .about-content h2 { font-weight: 900; font-size: 2rem; margin-bottom: 10px; letter-spacing: -1px; }
+        .about-content h3 { font-weight: 800; margin-top: 30px; color: #007bff; text-transform: uppercase; font-size: 0.9rem; }
+        .tip-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 10px 0; border-left: 4px solid #007bff; }
+        body.night-mode .tip-card { background: rgba(255,255,255,0.05); }
+        .close-about { position: absolute; top: 30px; right: 30px; font-size: 2rem; cursor: pointer; font-weight: 900; }
+
+        /* Main Elements */
+        header { position: absolute; top: 40px; width: 100%; left: 0; padding: 0 20px; z-index: 10; }
+        header h1 { font-weight: 900; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 4px; cursor: pointer; }
+        #weather-icon { font-size: clamp(4rem, 10vh, 6rem); margin-bottom: 10px; }
+        #manifesto { font-size: clamp(1.4rem, 3.5vh, 1.8rem); font-weight: 900; line-height: 1.1; margin-bottom: 25px; letter-spacing: -1px; }
+        
+        input { width: 100%; max-width: 450px; padding: 22px; border: 2px solid #eee; border-radius: 60px; font-size: 1.2rem; text-align: center; outline: none; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        #results-list { position: absolute; width: 100%; max-width: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; overflow: hidden; z-index: 1000; margin-top: 10px; }
+        .result-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; text-align: left; }
+
+        /* Decision Result Text */
+        #decision-text { font-size: clamp(4rem, 15vw, 7.5rem); font-weight: 900; line-height: 0.8; letter-spacing: -4px; margin: 15px 0 0 0; display: none; }
+        #summary-text { margin-top: 20px; font-weight: 800; font-size: 1.1rem; max-width: 380px; padding: 15px 25px; background: rgba(0,0,0,0.04); border-radius: 12px; display: none; }
+
+        /* Fabric & Hourly Data */
+        #extra-data { display: none; width: 100%; margin-top: 25px; }
+        .fabric-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .fabric-item { flex: 1; max-width: 150px; padding: 12px; border: 1px solid #eee; border-radius: 12px; font-size: 0.65rem; font-weight: 800; }
+        .fabric-item span { display: block; font-size: 1.3rem; color: #007bff; margin-top: 5px; }
+        #hourly-forecast { width: 100%; overflow-x: auto; padding: 10px 0; border-top: 1px solid #eee; }
+        .hourly-scroll { display: flex; gap: 10px; justify-content: center; }
+        .hourly-pill { min-width: 60px; padding: 8px; background: #f9f9f9; border-radius: 10px; font-size: 0.7rem; font-weight: 800; border: 1px solid #eee; }
+        .secondary-btn { display: none; margin-top: 30px; color: #007bff; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
+        .seo-h2 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+<div id="about-toggle" onclick="toggleAbout()">About</div>
+<div id="night-toggle" onclick="toggleNight()">Day Mode</div>
+
+<div id="about-page">
+    <div class="close-about" onclick="toggleAbout()">×</div>
+    <div class="about-content">
+        <h2>About DryOutside</h2>
+        <p><strong>Should I dry my clothes outside today?</strong> We built this tool to provide a definitive answer using real-time physics.</p>
+        <h3>The Science</h3>
+        <p>It's not just about the sun. We calculate based on <strong>Temperature</strong>, <strong>Humidity</strong>, and <strong>Wind Speed</strong>.</p>
+        <div class="tip-card">
+            <strong>Pro Tip:</strong> Wind is the unsung hero. It moves damp air away from your clothes, speeding up the drying process.
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <header><h1 onclick="location.reload()">DryOutside.com</h1></header>
+
+    <div class="hero-section">
+        <div id="weather-icon">🧺</div>
+        <h2 class="seo-h2">Should I dry my clothes outside today?</h2>
+        <div id="manifesto">The definitive answer to "Should I dry my clothes outside?" — Science-backed laundry permission.</div>
+
+        <div class="controls" id="search-container" style="position:relative;">
+            <input type="text" id="cityInput" placeholder="Enter Town/City" autocomplete="off">
+            <div id="results-list"></div>
+            <div onclick="getGPS()" style="margin-top: 15px; color: #007bff; font-weight: 800; cursor: pointer; font-size: 0.8rem;">📍 Use current location</div>
+        </div>
+        
+        <h2 id="decision-text">YES</h2>
+        <div id="summary-text"></div>
+        <div id="extra-data">
+            <div class="fabric-row">
+                <div class="fabric-item">👕 THIN TOP <span id="top-time">-</span></div>
+                <div class="fabric-item">👖 HEAVY JEANS <span id="jean-time">-</span></div>
+            </div>
+            <div id="hourly-forecast"><div class="hourly-scroll" id="hourly-list"></div></div>
+            <div id="local-name" style="margin-top:20px; font-weight:800; color:#007bff; text-transform:uppercase; font-size:0.8rem;"></div>
+        </div>
+        <div class="secondary-btn" id="reset-btn" onclick="location.reload()">🔄 Start Over</div>
+    </div>
+</div>
+
+<script>
+    /* THE ENGINE */
+    let isNight = false;
+    const initialEmojis = ["🧺", "👕", "👖", "🧦", "☀️", "💨", "👚"];
+    document.getElementById('weather-icon').innerText = initialEmojis[Math.floor(Math.random() * initialEmojis.length)];
+
+    const jokes = {
+        yes: ["The sun is working for free today. Don't insult it.", "Excellent conditions. Towels stand a chance today!", "Yes! Get them out there before the sky changes its mind."],
+        maybe: ["The air is a bit thick. It'll dry, but slowly.", "You're giving your clothes an 'air bath'. Marginal progress.", "Good for thin shirts, bad for heavy denim."],
+        no: ["Absolutely not. Even the ducks are staying in.", "It's a sponge-day. Clothes will come back wetter!", "Your tumble dryer is laughing at you. Keep them inside."]
+    };
+
+    function toggleAbout() { document.getElementById('about-page').style.display = document.getElementById('about-page').style.display === 'block' ? 'none' : 'block'; }
+    function toggleNight() {
+        isNight = !isNight;
+        document.body.classList.toggle('night-mode');
+        document.getElementById('night-toggle').innerText = isNight ? "Day Mode" : "Night Mode";
+    }
+
+    const cityInput = document.getElementById('cityInput');
+    const resultsList = document.getElementById('results-list');
+
+    /* Finding the City */
+    cityInput.addEventListener('input', () => {
+        const q = cityInput.value;
+        if (q.length < 2) { resultsList.style.display = 'none'; return; }
+        fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${q}&count=5`)
+            .then(res => res.json()).then(data => {
+                if (data.results) {
+                    resultsList.innerHTML = data.results.map(c => `
+                        <div class="result-item" onclick="selectLocation(${c.latitude}, ${c.longitude}, '${c.name}')">
+                            <b>${c.name}</b>, ${c.country_code}
+                        </div>
+                    `).join('');
+                    resultsList.style.display = 'block';
+                }
+            });
+    });
+
+    /* iPhone-optimized GPS */
+    async function getGPS() {
+        const options = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+            const geoData = await geoRes.json();
+            selectLocation(pos.coords.latitude, pos.coords.longitude, geoData.address.city || geoData.address.town || "Local Area");
+        }, (err) => { alert("Unable to determine location, ensure location services are enabled"); }, options);
+    }
+
+    /* Getting & Calculating Weather */
+    async function selectLocation(lat, lon, name) {
+        document.getElementById('search-container').style.display = 'none';
+        document.getElementById('manifesto').style.display = 'none';
+        document.getElementById('decision-text').style.display = 'block';
+        document.getElementById('summary-text').style.display = 'block';
+        document.getElementById('extra-data').style.display = 'block';
+        document.getElementById('reset-btn').style.display = 'block';
+        document.getElementById('local-name').innerText = name;
+        resultsList.style.display = 'none';
+
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation&hourly=temperature_2m,relative_humidity_2m,precipitation&forecast_days=1`);
+        const data = await res.json();
+        const cur = data.current;
+
+        /* The Drying Formula */
+        const factor = ((100 - cur.relative_humidity_2m) / 12) + (cur.temperature_2m / 10) + (cur.wind_speed_10m / 12);
+        document.getElementById('top-time').innerText = Math.max(1, (10 / factor) * 1.5).toFixed(1) + "h";
+        document.getElementById('jean-time').innerText = Math.max(2.5, (10 / factor) * 4).toFixed(1) + "h";
+
+        const dec = document.getElementById('decision-text');
+        const sum = document.getElementById('summary-text');
+
+        if (cur.precipitation > 0) {
+            dec.innerText = "NO"; dec.style.color = "#ff4757";
+            sum.innerText = jokes.no[Math.floor(Math.random() * jokes.no.length)];
+        } else if (cur.relative_humidity_2m > 80) {
+            dec.innerText = "MAYBE"; dec.style.color = "#f39c12";
+            sum.innerText = jokes.maybe[Math.floor(Math.random() * jokes.maybe.length)];
+        } else {
+            dec.innerText = "YES"; dec.style.color = "#2ecc71";
+            sum.innerText = jokes.yes[Math.floor(Math.random() * jokes.yes.length)];
+        }
+
+        /* Filling out the Hourly Forecast */
+        const hourlyList = document.getElementById('hourly-list');
+        hourlyList.innerHTML = "";
+        const now = new Date().getHours();
+        for(let i=1; i<=5; i++) {
+            const temp = Math.round(data.hourly.temperature_2m[i]);
+            const hum = data.hourly.relative_humidity_2m[i];
+            const rain = data.hourly.precipitation[i];
+            hourlyList.innerHTML += `
+                <div class="hourly-pill">
+                    <div>${(now + i) % 24}:00</div>
+                    <div style="color:#007bff; margin:3px 0">${temp}°</div>
+                    <div style="font-size:0.6rem; color:#aaa">${rain > 0 ? '🌧️' : hum + '%'}</div>
+                </div>`;
+        }
+    }
+</script>
+</body>
+</html>
